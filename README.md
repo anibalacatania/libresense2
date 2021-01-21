@@ -4,7 +4,7 @@ App for sensory analysis
 This is  a first attempt  at building  an open source software for sensory analysis.
 
 app-LibreSense actually contains two apps:
-the file app.r is  the app for capturing data from  panelists. the idea is that the leader of the sensory panel can modify the name and  number of the samples and also the descriptors. 
+the file app.r is  the app for capturing data from  panelists. The idea is that the leader of the sensory panel can modify the name and  number of the samples and also the descriptors. 
 A lot of work is required in this app.
 One  very important point is that samples  should be randomized or balanced  across the panelists. I imagine that the leader of the panel can upload a spreedsheet with the experimental design  (random or william latin square) and maybe another spreadsheet with the descriptors.
 Another important point is that it is not appropriate for the panelist to choose the sample to be tasted because the panelist may make a mistake.  Each sample should appear in sections automatically according to the experimental design.  
