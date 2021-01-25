@@ -6,9 +6,9 @@ In this first step we are trying to build an app for QDA (Quantitative descripti
 
 We presented this project at LatinR 2018 in Buenos Aires,Argentina
 
-http://47jaiio.sadio.org.ar/sites/default/files/LatinR_9.pdf
+http://47jaiio.sadio.org.ar/sites/default/files/LatinR_9.pdf  (Spanish)
 
-https://www.youtube.com/watch?v=DqrVVRA7riA&feature=youtu.be
+https://www.youtube.com/watch?v=DqrVVRA7riA&feature=youtu.be (Spanish)
 
 app-LibreSense actually contains two apps:
 the file app.r is  the app for capturing data from  panelists. The idea is that the leader of the sensory panel can modify the name and  number of the samples and also the descriptors.
