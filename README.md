@@ -2,7 +2,7 @@
 App for sensory analysis
 
 This is  a first attempt  at building  an open source software for sensory analysis.
-In this first step we are trying to build an app for QDA (Qunatitative descriptive analysis)
+In this first step we are trying to build an app for QDA (Quantitative descriptive analysis)
 
 We presented this project at LatinR 2018 in Buenos Aires,Argentina
 
