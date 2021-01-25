@@ -12,7 +12,7 @@ https://www.youtube.com/watch?v=DqrVVRA7riA&feature=youtu.be
 
 app-LibreSense actually contains two apps:
 the file app.r is  the app for capturing data from  panelists. The idea is that the leader of the sensory panel can modify the name and  number of the samples and also the descriptors.
-The  second app (server.R and ui.R) is for visualizing the results
-In case that you want to colaborate, please the issues
+The  second app (server.R and ui.R) is for visualizing the results.    
+In case that you want to colaborate, please the issues.
 
 . 
