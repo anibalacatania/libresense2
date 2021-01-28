@@ -32,7 +32,7 @@ if (!require("remotes")) {
   install.packages("remotes")
 }
 remotes::install_github(
-  "anibalacatania/LibreSense", subdir = "libresense", dependencies = TRUE
+  "jcrodriguez1989/LibreSense", subdir = "libresense", dependencies = TRUE
 )
 ```
 
