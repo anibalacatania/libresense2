@@ -1,0 +1,42 @@
+Package: libresense
+Type: Package
+Title: Sensory Analysis Application
+Version: 0.1.0
+Authors@R: c(
+    person(
+      given = "Juan Cruz", family = "Rodriguez", role = c("ctb"),
+      email = "jcrodriguez@unc.edu.ar"
+    ),
+    person(
+      given = "Carlos", family = "Catania", role = c("ctb"),
+      email = "harpo@ingenieria.uncuyo.edu.ar"
+    ),
+    person(
+      given = "Aníbal", family = "Catania", role = c("aut", "cre"),
+      email = "catania.anibal@inta.gob.ar"
+    )
+  )
+Maintainer: Juan Cruz Rodriguez <jcrodriguez@unc.edu.ar>
+Description: First attempt at building open-source software for sensory analysis.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Imports:
+  agricolae,
+  DT,
+  dplyr,
+  FactoMineR,
+  ggplot2,
+  ggradar,
+  ggwordcloud,
+  glue,
+  patchwork,
+  purrr,
+  qrcode,
+  readr,
+  SensoMineR,
+  shiny,
+  shinyjs,
+  shinythemes,
+  tidyr
+LazyData: true
+RoxygenNote: 7.1.1
