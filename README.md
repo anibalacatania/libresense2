@@ -80,8 +80,9 @@ but might be useful for the panel leader.
 
 #### Running the Panel
 
-Let’s assume we are using the two files presented above, to run the
-panel app, from an R console type:
+Let’s assume we are using the two files presented above (download them
+in the same folder as running the R session), to run the panel app, from
+an R console type:
 
 ``` r
 libresense::run_panel(
@@ -93,8 +94,9 @@ libresense::run_panel(
 
 #### Running the Board
 
-Let’s assume we are using the two files presented above, to run the
-board app, from an R console type:
+Let’s assume we are using the two files presented above (download them
+in the same folder as running the R session), to run the board app, from
+an R console type:
 
 ``` r
 libresense::run_board(answers_dir = "Answers/")

@@ -82,8 +82,7 @@ run_panel <- function(
       Numeric = sliderInput(
         make.names(as.character(attribute$Nombre)),
         label = as.character(attribute$Nombre),
-        min = numeric_range[[1]], max = numeric_range[[2]],
-        value = mean(numeric_range), step = .5
+        min = numeric_range[[1]], max = numeric_range[[2]], value = numeric_range[[1]], step = .5
       ),
       Text = selectizeInput(
         make.names(as.character(attribute$Nombre)),
