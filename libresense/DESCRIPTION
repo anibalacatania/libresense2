@@ -37,6 +37,9 @@ Imports:
   shiny,
   shinyjs,
   shinythemes,
-  tidyr
+  tidyr,
+  tidyselect
+Suggests:
+  crossdes
 LazyData: true
 RoxygenNote: 7.1.1

@@ -7,6 +7,7 @@
 run_panel(
   products_file,
   attributes_file,
+  design_file = NULL,
   answers_dir = "Answers",
   dest_url = NULL,
   numeric_range = c(0, 10)
@@ -16,6 +17,8 @@ run_panel(
 \item{products_file}{A character path to the csv file containing the products to evaluate.}
 
 \item{attributes_file}{A character path to the csv file containing the attributes to evaluate.}
+
+\item{design_file}{A character path to the csv file containing the experimental design.}
 
 \item{answers_dir}{A character path to the folder in which to save user responses (if it does not
 exist, it will create it).}

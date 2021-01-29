@@ -2,30 +2,32 @@
 #'
 #' @param products_file A character path to the csv file containing the products to evaluate.
 #' @param attributes_file A character path to the csv file containing the attributes to evaluate.
+#' @param design_file A character path to the csv file containing the experimental design.
 #' @param answers_dir A character path to the folder in which to save user responses (if it does not
 #'   exist, it will create it).
 #' @param dest_url An optional character including the URL to use as destination host and port.
 #'   For example: 192.168.100.7:4000 .
 #' @param numeric_range A numeric vector indicating the range for numeric inputs.
 #'
-#' @importFrom dplyr `%>%` bind_rows
+#' @importFrom dplyr `%>%` bind_rows mutate_at tibble vars
 #' @importFrom glue glue
 #' @importFrom purrr map
 #' @importFrom readr cols read_csv write_csv
-#' @importFrom shiny actionButton fluidPage getQueryString modalDialog reactiveValuesToList
-#' @importFrom shiny removeModal renderUI selectInput selectizeInput shinyApp showModal
-#' @importFrom shiny showNotification sliderInput textInput
+#' @importFrom shiny actionButton fluidPage getQueryString modalDialog reactiveVal
+#' @importFrom shiny reactiveValuesToList removeModal renderUI selectInput selectizeInput shinyApp
+#' @importFrom shiny showModal showNotification sliderInput textInput
 #' @importFrom shiny uiOutput updateQueryString updateSelectInput updateSelectizeInput
 #' @importFrom shiny updateSliderInput updateTextInput
 #' @importFrom shinyjs extendShinyjs js useShinyjs
 #' @importFrom shinythemes shinytheme
 #' @importFrom stats setNames
+#' @importFrom tidyselect everything
 #'
 #' @export
 #'
 run_panel <- function(
-                      products_file, attributes_file, answers_dir = "Answers", dest_url = NULL,
-                      numeric_range = c(0, 10)) {
+                      products_file, attributes_file, design_file = NULL, answers_dir = "Answers",
+                      dest_url = NULL, numeric_range = c(0, 10)) {
   # Set default host/port, if not provided as `dest_url`.
   host <- getOption("shiny.host", "127.0.0.1")
   port <- getOption("shiny.port")
@@ -41,6 +43,13 @@ run_panel <- function(
   # Load configuration files.
   products <- read_csv(products_file, col_types = cols())
   attributes <- read_csv(attributes_file, col_types = cols())
+  design <- tibble(as.data.frame(t(seq_len(nrow(products)))))
+  if (!is.null(design_file)) {
+    design <- read_csv(design_file, col_types = cols())
+  }
+  colnames(design) <- paste0("N ", seq_along(design))
+  design <- mutate(design, Valuador = NA)
+  design <- reactiveVal(design)
 
   ui <- fluidPage(
     # Set a dark theme.
@@ -108,8 +117,23 @@ run_panel <- function(
     })
   }
 
+  # Assigns a slot in the design to the username.
+  assign_design <- function(design, username, products) {
+    if (all(!is.na(design$Valuador))) {
+      # Add empty slots by repeating the design.
+      design <- bind_rows(design, mutate(design, Valuador = NA))
+    }
+    design$Valuador[is.na(design$Valuador)][[1]] <- username
+    # Save the assigned design in a file.
+    filter(design, !is.na(Valuador)) %>%
+      mutate_at(vars(-Valuador), function(x) products[x, 1, drop = TRUE]) %>%
+      select(Valuador, everything()) %>%
+      write_csv(glue("{answers_dir}/diseno.csv"))
+    design
+  }
+
   # Logged panelists.
-  panel <- c()
+  panel <- reactiveVal()
   # Set server side functionality.
   server <- function(input, output, session) {
     # Get username.
@@ -125,13 +149,21 @@ run_panel <- function(
         username_modal(session)
         return()
       }
-      if (input$username %in% panel) {
+      if (input$username %in% panel()) {
         showNotification(
           "El nombre ya había sido seleccionado, asegúrese que no esté repetido.",
           type = "warning"
         )
+      } else {
+        design(assign_design(design(), input$username, products))
       }
-      panel <<- unique(c(panel, input$username))
+      # Set selector order according to current user's design.
+      curr_design <- filter(design(), Valuador == input$username) %>%
+        select(-Valuador) %>%
+        as.numeric()
+      updateSelectInput(session, "product", choices = products[curr_design, 1, drop = TRUE])
+      # Add the user to the panel.
+      panel(unique(c(panel(), input$username)))
       dir.create(glue("{answers_dir}/{input$username}"), showWarnings = FALSE, recursive = TRUE)
       # Add username to the query string, so if they update, it will remember it.
       updateQueryString(glue("?user={input$username}"), mode = "replace")

@@ -32,7 +32,7 @@ if (!require("remotes")) {
   install.packages("remotes")
 }
 remotes::install_github(
-  "jcrodriguez1989/LibreSense", subdir = "libresense", dependencies = TRUE
+  "anibalacatania/LibreSense", subdir = "libresense", dependencies = TRUE
 )
 ```
 
@@ -91,6 +91,47 @@ libresense::run_panel(
   answers_dir = "Answers/"
 )
 ```
+
+##### Using an Experimental Design
+
+LibreSense allows an experimental design for the panel. For example, if
+we want to create a Williams Latin Square design for our
+`"productos.csv"` file we could run:
+
+``` r
+library("crossdes")
+library("dplyr")
+library("readr")
+
+read_csv("productos.csv", col_types = cols()) %>%  # Read the file.
+  nrow() %>%                                       # Get how many products to evaluate.
+  williams() %>%                                   # Create the Williams Latin Square design.
+  as.data.frame() %>% 
+  write_csv("diseno.csv")                          # Save it as a csv file.
+read_csv("diseno.csv", col_types = cols())         # Print the design.
+#> # A tibble: 4 x 4
+#>      V1    V2    V3    V4
+#>   <dbl> <dbl> <dbl> <dbl>
+#> 1     1     2     4     3
+#> 2     2     3     1     4
+#> 3     3     4     2     1
+#> 4     4     1     3     2
+```
+
+And finally, use this design for the panel:
+
+``` r
+libresense::run_panel(
+  products_file = "productos.csv",
+  attributes_file = "atributos.csv",
+  answers_dir = "Answers/",
+  design_file = "diseno.csv"
+)
+```
+
+Once the panel evaluations have finished, in the `answers_dir` folder,
+there will be a file named `"diseno.csv"` which will contain the order
+in which each product was evaluated by each panelist.
 
 #### Running the Board
 
