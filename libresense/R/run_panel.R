@@ -18,7 +18,7 @@
 #' @importFrom shiny showModal showNotification sliderInput textInput
 #' @importFrom shiny uiOutput updateQueryString updateSelectInput updateSelectizeInput
 #' @importFrom shiny updateSliderInput updateTextInput
-#' @importFrom shinyjs extendShinyjs js useShinyjs
+#' @importFrom shinyjs disable extendShinyjs js useShinyjs
 #' @importFrom shinythemes shinytheme
 #' @importFrom stats setNames
 #' @importFrom tidyselect everything
@@ -28,6 +28,9 @@
 run_panel <- function(
                       products_file, attributes_file, design_file = NULL, answers_dir = "Answers",
                       dest_url = NULL, numeric_range = c(0, 10)) {
+
+  ### Global variables.
+
   # Set default host/port, if not provided as `dest_url`.
   host <- getOption("shiny.host", "127.0.0.1")
   port <- getOption("shiny.port")
@@ -50,6 +53,13 @@ run_panel <- function(
   colnames(design) <- paste0("N ", seq_along(design))
   design <- mutate(design, Valuador = NA)
   design <- reactiveVal(design)
+  # Create answers directory.
+  dir.create(answers_dir, showWarnings = FALSE, recursive = TRUE)
+  # Logged panelists.
+  panel <- reactiveVal()
+
+
+  ### UI.
 
   ui <- fluidPage(
     # Set a dark theme.
@@ -68,80 +78,30 @@ run_panel <- function(
     align = "center"
   )
 
-  # Shows the modal in which to enter the "username".
-  username_modal <- function(session) {
-    showModal(
-      modalDialog(
-        textInput("username", "Tu nombre (es tu identificador)"),
-        actionButton("submitName", "Enviar"),
-        align = "center",
-        title = "Bienvenida/o",
-        footer = NULL,
-        size = "s"
-      ),
-      session
-    )
-  }
 
-  # Creates the UI for each attribute.
-  create_ui <- function(attribute, numeric_range) {
-    type <- trimws(strsplit(attribute$Valores, ":|,")[[1]])
-    switch(
-      type[[1]],
-      Numeric = sliderInput(
-        make.names(as.character(attribute$Nombre)),
-        label = as.character(attribute$Nombre),
-        min = numeric_range[[1]], max = numeric_range[[2]], value = numeric_range[[1]], step = .5
-      ),
-      Text = selectizeInput(
-        make.names(as.character(attribute$Nombre)),
-        label = as.character(attribute$Nombre),
-        choices = NULL, multiple = TRUE, options = list(create = TRUE)
-      )
-    )
-  }
+  ### Server.
 
-  # Sets the values for attributes UI.
-  set_inputs <- function(values, session) {
-    values <- data.frame(values)
-    map(seq_along(values), function(i) {
-      switch(
-        class(values[, i]),
-        numeric = updateSliderInput(session, colnames(values)[[i]], value = values[, i]),
-        character = updateSelectizeInput(
-          session, colnames(values)[[i]],
-          selected = strsplit(values[, i], ", ")[[1]],
-          choices = strsplit(values[, i], ", ")[[1]]
-        )
-      )
-    })
-  }
-
-  # Assigns a slot in the design to the username.
-  assign_design <- function(design, username, products) {
-    if (all(!is.na(design$Valuador))) {
-      # Add empty slots by repeating the design.
-      design <- bind_rows(design, mutate(design, Valuador = NA))
-    }
-    design$Valuador[is.na(design$Valuador)][[1]] <- username
-    # Save the assigned design in a file.
-    filter(design, !is.na(Valuador)) %>%
-      mutate_at(vars(-Valuador), function(x) products[x, 1, drop = TRUE]) %>%
-      select(Valuador, everything()) %>%
-      write_csv(glue("{answers_dir}/diseno.csv"))
-    design
-  }
-
-  # Logged panelists.
-  panel <- reactiveVal()
   # Set server side functionality.
   server <- function(input, output, session) {
-    # Get username.
-    observeEvent(
-      getQueryString()$user,
-      # Try to get the username from the query string.
-      updateTextInput(session, "username", value = getQueryString()$user)
-    )
+    ### User variables.
+    username <- reactiveVal("") # Logged user.
+    product <- reactiveVal("") # Current product.
+
+    # Prepare products selector.
+    updateSelectInput(session, "product", label = colnames(products)[[1]], choices = products[, 1])
+    disable("product")
+
+    # Prepare attributes inputs.
+    output$attributes <- renderUI({
+      map(seq_len(nrow(attributes)), function(i) {
+        create_ui(attributes[i, ], numeric_range)
+      })
+    })
+
+    # Try to get the username and product from the query string.
+    observeEvent(getQueryString()$user, username(getQueryString()$user))
+    observeEvent(getQueryString()$product, product(getQueryString()$product))
+    # Ask to get the username.
     username_modal(session)
     observeEvent(input$submitName, {
       if (nchar(input$username) == 0) {
@@ -154,40 +114,32 @@ run_panel <- function(
           "El nombre ya había sido seleccionado, asegúrese que no esté repetido.",
           type = "warning"
         )
-      } else {
-        design(assign_design(design(), input$username, products))
       }
+      username(input$username)
+      dir.create(glue("{answers_dir}/{input$username}"), showWarnings = FALSE, recursive = TRUE)
+      removeModal()
+    })
+    # If logged in, update values.
+    observeEvent(username(), {
+      req(nchar(username()) > 0)
+      # Assign and get current user's design.
+      design(assign_design(design(), username(), products, answers_dir))
       # Set selector order according to current user's design.
-      curr_design <- filter(design(), Valuador == input$username) %>%
+      curr_design <- filter(design(), Valuador == username()) %>%
         select(-Valuador) %>%
         as.numeric()
       updateSelectInput(session, "product", choices = products[curr_design, 1, drop = TRUE])
       # Add the user to the panel.
-      panel(unique(c(panel(), input$username)))
-      dir.create(glue("{answers_dir}/{input$username}"), showWarnings = FALSE, recursive = TRUE)
+      panel(unique(c(panel(), username())))
       # Add username to the query string, so if they update, it will remember it.
-      updateQueryString(glue("?user={input$username}"), mode = "replace")
+      updateQueryString(glue("?user={username()}"), mode = "replace")
       removeModal()
     })
-
-    # Prepare products selector.
-    updateSelectInput(session, "product", label = colnames(products)[[1]], choices = products[, 1])
-
-    # Prepare attributes inputs.
-    output$attributes <- renderUI({
-      map(seq_len(nrow(attributes)), function(i) {
-        create_ui(attributes[i, ], numeric_range)
-      })
-    })
-
-    # If product selection changed, then restore attributes inputs (if previously saved).
-    observeEvent(c(input$product, input$username), {
-      req(input$username, input$product)
-      if (file.exists(glue("{answers_dir}/{input$username}/{input$product}.csv"))) {
-        glue("{answers_dir}/{input$username}/{input$product}.csv") %>%
-          read_csv(col_types = cols()) %>%
-          set_inputs(session)
-      }
+    # If product changed, update the selector.
+    observeEvent(product(), {
+      req(nchar(product()) > 0)
+      updateQueryString(glue("?user={username()}&product={product()}"), mode = "replace")
+      updateSelectInput(session, "product", selected = product())
     })
 
     # Submit a result.
@@ -198,7 +150,20 @@ run_panel <- function(
         # If they are text, paste them with commas.
         map(~ ifelse(!is.numeric(.x), paste(.x, collapse = ", "), .x)) %>%
         bind_rows() %>%
-        write_csv(glue("{answers_dir}/{input$username}/{input$product}.csv"))
+        write_csv(glue("{answers_dir}/{username()}/{input$product}.csv"))
+      # Update select input to the next product.
+      curr_design <- filter(design(), Valuador == username()) %>%
+        select(-Valuador) %>%
+        as.numeric()
+      curr_design <- products[curr_design, 1, drop = TRUE]
+      act_prod <- which(curr_design == input$product)
+      if (act_prod < length(curr_design)) {
+        # Reset default values.
+        map(seq_len(nrow(attributes)), function(i) {
+          reset_ui(attributes[i, ], numeric_range, session)
+        })
+        product(curr_design[[act_prod + 1]])
+      }
       js$scrolltop() # Scroll to top.
       showNotification("Valuación guardada", type = "message")
     })
@@ -206,4 +171,69 @@ run_panel <- function(
 
   # Run the app.
   shinyApp(ui, server, options = list(host = host, port = port))
+}
+
+
+# Shows the modal in which to enter the "username".
+username_modal <- function(session) {
+  showModal(
+    modalDialog(
+      textInput("username", "Tu nombre (es tu identificador)"),
+      actionButton("submitName", "Enviar"),
+      align = "center",
+      title = "Bienvenida/o",
+      footer = NULL,
+      size = "s"
+    ),
+    session
+  )
+}
+
+# Creates the UI for each attribute.
+create_ui <- function(attribute, numeric_range) {
+  type <- trimws(strsplit(attribute$Valores, ":|,")[[1]])
+  switch(
+    type[[1]],
+    Numeric = sliderInput(
+      make.names(as.character(attribute$Nombre)),
+      label = as.character(attribute$Nombre),
+      min = numeric_range[[1]], max = numeric_range[[2]], value = numeric_range[[1]], step = .5
+    ),
+    Text = selectizeInput(
+      make.names(as.character(attribute$Nombre)),
+      label = as.character(attribute$Nombre),
+      choices = NULL, multiple = TRUE, options = list(create = TRUE)
+    )
+  )
+}
+
+# Resets the UI for each attribute.
+reset_ui <- function(attribute, numeric_range, session) {
+  type <- trimws(strsplit(attribute$Valores, ":|,")[[1]])
+  switch(
+    type[[1]],
+    Numeric = updateSliderInput(
+      session, make.names(as.character(attribute$Nombre)), value = numeric_range[[1]]
+    ),
+    Text = updateSelectizeInput(
+      session, make.names(as.character(attribute$Nombre)), selected = ""
+    )
+  )
+}
+
+# Assigns a slot in the design to the username.
+assign_design <- function(design, username, products, answers_dir) {
+  if (all(!is.na(design$Valuador))) {
+    # Add empty slots by repeating the design.
+    design <- bind_rows(design, mutate(design, Valuador = NA))
+  }
+  if (!username %in% design$Valuador) {
+    design$Valuador[is.na(design$Valuador)][[1]] <- username
+  }
+  # Save the assigned design in a file.
+  filter(design, !is.na(Valuador)) %>%
+    mutate_at(vars(-Valuador), function(x) products[x, 1, drop = TRUE]) %>%
+    select(Valuador, everything()) %>%
+    write_csv(glue("{answers_dir}/diseno.csv"))
+  design
 }
