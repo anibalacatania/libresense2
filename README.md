@@ -48,15 +48,15 @@ this should be performed in a `csv` file, as exemplified in
     #> 1 Intensidad de color Numeric
     #> 2              Aromas    Text
     #> 3             Sabores    Text
-    #> 4              Frutal Numeric
-    #> 5              Floral Numeric
-    #> 6            Herbáceo Numeric
+    #> 4              Frutal   Check
+    #> 5              Floral   Check
+    #> 6            Herbáceo   Check
 
 This `csv` file should contain two columns:
 
 -   Nombre: The names of the attribute to be evaluated.
 -   Valores: The types of the attribute to be evaluated, must be one of
-    `{"Numeric", "Text"}`
+    `{"Numeric", "Check", "Text"}`
 
 ### Setting the Products to Evaluate
 

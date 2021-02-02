@@ -13,12 +13,12 @@
 #' @importFrom glue glue
 #' @importFrom purrr map
 #' @importFrom readr cols read_csv write_csv
-#' @importFrom shiny actionButton fluidPage getQueryString modalDialog reactiveVal
+#' @importFrom shiny actionButton checkboxInput fluidPage getQueryString modalDialog reactiveVal
 #' @importFrom shiny reactiveValuesToList removeModal renderUI selectInput selectizeInput shinyApp
 #' @importFrom shiny showModal showNotification sliderInput textInput
-#' @importFrom shiny uiOutput updateQueryString updateSelectInput updateSelectizeInput
-#' @importFrom shiny updateSliderInput updateTextInput
-#' @importFrom shinyjs disable extendShinyjs js useShinyjs
+#' @importFrom shiny uiOutput updateCheckboxInput updateQueryString updateSelectInput
+#' @importFrom shiny updateSelectizeInput updateSliderInput updateTextInput
+#' @importFrom shinyjs disabled extendShinyjs js useShinyjs
 #' @importFrom shinythemes shinytheme
 #' @importFrom stats setNames
 #' @importFrom tidyselect everything
@@ -70,8 +70,16 @@ run_panel <- function(
       text = "shinyjs.scrolltop = function() {window.scrollTo(0, 0)};",
       functions = "scrolltop"
     ),
+    # Disable browser navigation.
+    shiny::tags$script(paste(
+      "history.pushState(null, document.title, location.href);",
+      "window.addEventListener('popstate', function () {",
+      "  history.pushState(null, document.title, location.href);",
+      "});",
+      sep = "\n"
+    )),
     # Selector of the product to evaluate.
-    selectInput("product", "", choices = NULL),
+    disabled(selectInput("product", "", choices = NULL)),
     # UI for the different attributes inputs.
     uiOutput("attributes"),
     actionButton("submit", "Enviar"),
@@ -91,7 +99,6 @@ run_panel <- function(
 
     # Prepare products selector.
     updateSelectInput(session, "product", label = colnames(products)[[1]], choices = products[, 1])
-    disable("product")
 
     # Prepare attributes inputs.
     output$attributes <- renderUI({
@@ -211,7 +218,11 @@ create_ui <- function(attribute, numeric_range) {
     Numeric = sliderInput(
       make.names(as.character(attribute$Nombre)),
       label = as.character(attribute$Nombre),
-      min = numeric_range[[1]], max = numeric_range[[2]], value = numeric_range[[1]], step = .5
+      min = numeric_range[[1]], max = numeric_range[[2]], value = mean(numeric_range), step = .5
+    ),
+    Check = checkboxInput(
+      make.names(as.character(attribute$Nombre)),
+      label = as.character(attribute$Nombre)
     ),
     Text = selectizeInput(
       make.names(as.character(attribute$Nombre)),
@@ -227,10 +238,13 @@ reset_ui <- function(attribute, numeric_range, session) {
   switch(
     type[[1]],
     Numeric = updateSliderInput(
-      session, make.names(as.character(attribute$Nombre)), value = numeric_range[[1]]
+      session, make.names(as.character(attribute$Nombre)),
+      value = mean(numeric_range)
     ),
+    Check = updateCheckboxInput(session, make.names(as.character(attribute$Nombre)), value = FALSE),
     Text = updateSelectizeInput(
-      session, make.names(as.character(attribute$Nombre)), selected = ""
+      session, make.names(as.character(attribute$Nombre)),
+      selected = ""
     )
   )
 }

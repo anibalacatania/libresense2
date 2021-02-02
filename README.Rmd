@@ -63,7 +63,7 @@ read_csv("atributos.csv", col_types = cols()) %>%
 This `csv` file should contain two columns:
 
 * Nombre: The names of the attribute to be evaluated.
-* Valores: The types of the attribute to be evaluated, must be one of `{"Numeric", "Text"}`
+* Valores: The types of the attribute to be evaluated, must be one of `{"Numeric", "Check", "Text"}`
 
 ### Setting the Products to Evaluate
 

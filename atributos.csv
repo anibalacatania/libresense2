@@ -2,9 +2,9 @@ Nombre,Valores
 Intensidad de color,Numeric
 Aromas,Text
 Sabores,Text
-Frutal,Numeric
-Floral,Numeric
-Herbáceo,Numeric
+Frutal,Check
+Floral,Check
+Herbáceo,Check
 Acidez,Numeric
 Amargor,Numeric
 Alcohol,Numeric

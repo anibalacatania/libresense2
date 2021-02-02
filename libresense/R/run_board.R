@@ -187,7 +187,8 @@ run_board <- function(
         )
       )
       updateSelectInput(
-        session, "attribute_selector_2", choices = choices, selected = input$attribute_selector
+        session, "attribute_selector_2",
+        choices = choices, selected = input$attribute_selector
       )
     })
 
