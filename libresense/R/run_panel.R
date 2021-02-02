@@ -104,7 +104,7 @@ run_panel <- function(
     observeEvent(finished(), {
       req(finished())
       showModal(modalDialog(
-        "Muchas gracias, ha finalizado la evaluación.", size = "l", footer = NULL
+        title = "Muchas gracias, ha finalizado la evaluación.", size = "l", footer = NULL
       ))
     })
 
