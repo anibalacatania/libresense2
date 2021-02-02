@@ -86,6 +86,8 @@ run_panel <- function(
     ### User variables.
     username <- reactiveVal("") # Logged user.
     product <- reactiveVal("") # Current product.
+    # Control if the panelist has finished.
+    finished <- reactiveVal(FALSE)
 
     # Prepare products selector.
     updateSelectInput(session, "product", label = colnames(products)[[1]], choices = products[, 1])
@@ -98,9 +100,18 @@ run_panel <- function(
       })
     })
 
+    # Disable everything if evaluation has finished.
+    observeEvent(finished(), {
+      req(finished())
+      showModal(modalDialog(
+        "Muchas gracias, ha finalizado la evaluación.", size = "l", footer = NULL
+      ))
+    })
+
     # Try to get the username and product from the query string.
     observeEvent(getQueryString()$user, username(getQueryString()$user))
     observeEvent(getQueryString()$product, product(getQueryString()$product))
+    observeEvent(getQueryString(), finished("finished" %in% names(getQueryString())))
     # Ask to get the username.
     username_modal(session)
     observeEvent(input$submitName, {
@@ -163,6 +174,9 @@ run_panel <- function(
           reset_ui(attributes[i, ], numeric_range, session)
         })
         product(curr_design[[act_prod + 1]])
+      } else {
+        finished(TRUE)
+        updateQueryString(glue("?finished"), mode = "replace")
       }
       js$scrolltop() # Scroll to top.
       showNotification("Valuación guardada", type = "message")
