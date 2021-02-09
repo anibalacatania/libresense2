@@ -3,8 +3,8 @@
 
 Sensory analysis application.
 
-This is the first attempt at building open-source software for sensory
-analysis. In this first step, we are trying to build an application for
+This is the first attempt at building open-source software for capturing sensory
+data. In this first step, we are trying to build an application for
 Quantitative Descriptive Analysis (QDA).
 
 We presented this project at LatinR 2018 in Buenos Aires, Argentina.
