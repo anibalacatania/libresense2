@@ -94,28 +94,45 @@ libresense::run_panel(
 
 ##### Using an Experimental Design
 
-LibreSense allows an experimental design for the panel. For example, if
-we want to create a Williams Latin Square design for our
-`"productos.csv"` file we could run:
+LibreSense allows an experimental design for the panel. This design file
+must contain a column named `Muestra` which will hold the order in which
+each product should be evaluated by each panelist, i.e., the first rows
+will be for the first panelist, and so on. For example, if we want to
+create a Williams Latin Square design for our `"productos.csv"` file we
+could run:
 
 ``` r
 library("crossdes")
 library("dplyr")
 library("readr")
 
-read_csv("productos.csv", col_types = cols()) %>%  # Read the file.
+wls_design <- read_csv(                            # Read the products file.
+  "productos.csv", col_types = cols()
+) %>%
   nrow() %>%                                       # Get how many products to evaluate.
-  williams() %>%                                   # Create the Williams Latin Square design.
-  as.data.frame() %>% 
+  williams()                                       # Create the Williams Latin Square design.
+data.frame(Muestra = as.vector(t(wls_design))) %>% # Reformat it as a one-column data.frame.
   write_csv("diseno.csv")                          # Save it as a csv file.
 read_csv("diseno.csv", col_types = cols())         # Print the design.
-#> # A tibble: 4 x 4
-#>      V1    V2    V3    V4
-#>   <dbl> <dbl> <dbl> <dbl>
-#> 1     1     2     4     3
-#> 2     2     3     1     4
-#> 3     3     4     2     1
-#> 4     4     1     3     2
+#> # A tibble: 16 x 1
+#>    Muestra
+#>      <dbl>
+#>  1       1
+#>  2       2
+#>  3       4
+#>  4       3
+#>  5       2
+#>  6       3
+#>  7       1
+#>  8       4
+#>  9       3
+#> 10       4
+#> 11       2
+#> 12       1
+#> 13       4
+#> 14       1
+#> 15       3
+#> 16       2
 ```
 
 And finally, use this design for the panel:

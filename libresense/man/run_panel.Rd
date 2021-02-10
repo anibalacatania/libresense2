@@ -9,6 +9,7 @@ run_panel(
   attributes_file,
   design_file = NULL,
   answers_dir = "Answers",
+  product_name = "NombreProducto",
   dest_url = NULL,
   numeric_range = c(0, 10)
 )
@@ -22,6 +23,12 @@ run_panel(
 
 \item{answers_dir}{A character path to the folder in which to save user responses (if it does not
 exist, it will create it).}
+
+\item{product_name}{One of {"NombreProducto", "CodigoProducto", "CodigoMuestra"},
+indicating which product label the panelist will see. "NombreProducto" is the products' names
+as appear in `products_file`; "CodigoProducto" is a random code assigned to each different
+product; "CodigoMuestra" is a random code assigned to each different product-panelist
+combination.}
 
 \item{dest_url}{An optional character including the URL to use as destination host and port.
 For example: 192.168.100.7:4000 .}

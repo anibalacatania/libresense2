@@ -5,11 +5,16 @@
 #' @param design_file A character path to the csv file containing the experimental design.
 #' @param answers_dir A character path to the folder in which to save user responses (if it does not
 #'   exist, it will create it).
+#' @param product_name One of {"NombreProducto", "CodigoProducto", "CodigoMuestra"},
+#'   indicating which product label the panelist will see. "NombreProducto" is the products' names
+#'   as appear in `products_file`; "CodigoProducto" is a random code assigned to each different
+#'   product; "CodigoMuestra" is a random code assigned to each different product-panelist
+#'   combination.
 #' @param dest_url An optional character including the URL to use as destination host and port.
 #'   For example: 192.168.100.7:4000 .
 #' @param numeric_range A numeric vector indicating the range for numeric inputs.
 #'
-#' @importFrom dplyr `%>%` bind_rows mutate_at tibble vars
+#' @importFrom dplyr `%>%` bind_rows filter filter_at left_join mutate_at pull tibble vars
 #' @importFrom glue glue
 #' @importFrom purrr map
 #' @importFrom readr cols read_csv write_csv
@@ -27,7 +32,13 @@
 #'
 run_panel <- function(
                       products_file, attributes_file, design_file = NULL, answers_dir = "Answers",
-                      dest_url = NULL, numeric_range = c(0, 10)) {
+                      product_name = "NombreProducto", dest_url = NULL, numeric_range = c(0, 10)) {
+
+  ### Input variables check.
+
+  if (!product_name %in% c("NombreProducto", "CodigoProducto", "CodigoMuestra")) {
+    stop('`product_name` must be one of {"NombreProducto", "CodigoProducto", "CodigoMuestra"}')
+  }
 
   ### Global variables.
 
@@ -46,12 +57,27 @@ run_panel <- function(
   # Load configuration files.
   products <- read_csv(products_file, col_types = cols())
   attributes <- read_csv(attributes_file, col_types = cols())
-  design <- tibble(as.data.frame(t(seq_len(nrow(products)))))
+  design <- tibble(Muestra = seq_len(nrow(products)))
   if (!is.null(design_file)) {
     design <- read_csv(design_file, col_types = cols())
   }
-  colnames(design) <- paste0("N ", seq_along(design))
-  design <- mutate(design, Valuador = NA)
+  # Create design columns if don't exist.
+  if (!"Valuador" %in% colnames(design)) {
+    design <- mutate(design, Valuador = "")
+  }
+  if (!"NombreProducto" %in% colnames(design)) {
+    design <- mutate(design, NombreProducto = products[Muestra, 1, drop = TRUE])
+  }
+  if (!"CodigoProducto" %in% colnames(design)) {
+    samples_code <- tibble(
+      Muestra = unique(design$Muestra),
+      CodigoProducto = paste0("P", sample(1000, nrow(products)) - 1)
+    )
+    design <- left_join(design, samples_code, by = "Muestra")
+  }
+  if (!"CodigoMuestra" %in% colnames(design)) {
+    design <- mutate(design, CodigoMuestra = paste0("M", sample(1000, nrow(design)) - 1))
+  }
   design <- reactiveVal(design)
   # Create answers directory.
   dir.create(answers_dir, showWarnings = FALSE, recursive = TRUE)
@@ -98,7 +124,7 @@ run_panel <- function(
     finished <- reactiveVal(FALSE)
 
     # Prepare products selector.
-    updateSelectInput(session, "product", label = colnames(products)[[1]], choices = products[, 1])
+    updateSelectInput(session, "product", label = colnames(products)[[1]])
 
     # Prepare attributes inputs.
     output$attributes <- renderUI({
@@ -143,10 +169,8 @@ run_panel <- function(
       # Assign and get current user's design.
       design(assign_design(design(), username(), products, answers_dir))
       # Set selector order according to current user's design.
-      curr_design <- filter(design(), Valuador == username()) %>%
-        select(-Valuador) %>%
-        as.numeric()
-      updateSelectInput(session, "product", choices = products[curr_design, 1, drop = TRUE])
+      curr_design <- filter(design(), Valuador == username())
+      updateSelectInput(session, "product", choices = curr_design[[product_name]])
       # Add the user to the panel.
       panel(unique(c(panel(), username())))
       # Add username to the query string, so if they update, it will remember it.
@@ -163,24 +187,23 @@ run_panel <- function(
     # Submit a result.
     observeEvent(input$submit, {
       # Get the attributes inputs.
+      curr_design <- filter(design(), Valuador == username())
+      prod_name <- filter_at(curr_design, product_name, ~ .x == input$product)$NombreProducto
       reactiveValuesToList(input)[make.names(as.character(attributes$Nombre))] %>%
         setNames(as.character(attributes$Nombre)) %>%
         # If they are text, paste them with commas.
         map(~ ifelse(!is.numeric(.x), paste(.x, collapse = ", "), .x)) %>%
         bind_rows() %>%
-        write_csv(glue("{answers_dir}/{username()}/{input$product}.csv"))
+        write_csv(glue("{answers_dir}/{username()}/{prod_name}.csv"))
       # Update select input to the next product.
-      curr_design <- filter(design(), Valuador == username()) %>%
-        select(-Valuador) %>%
-        as.numeric()
-      curr_design <- products[curr_design, 1, drop = TRUE]
-      act_prod <- which(curr_design == input$product)
-      if (act_prod < length(curr_design)) {
+      curr_prod_order <- curr_design[[product_name]]
+      act_prod <- which(curr_prod_order == input$product)
+      if (act_prod < nrow(curr_design)) {
         # Reset default values.
         map(seq_len(nrow(attributes)), function(i) {
           reset_ui(attributes[i, ], numeric_range, session)
         })
-        product(curr_design[[act_prod + 1]])
+        product(curr_prod_order[[act_prod + 1]])
       } else {
         finished(TRUE)
         updateQueryString(glue("?finished"), mode = "replace")
@@ -251,16 +274,19 @@ reset_ui <- function(attribute, numeric_range, session) {
 
 # Assigns a slot in the design to the username.
 assign_design <- function(design, username, products, answers_dir) {
-  if (all(!is.na(design$Valuador))) {
+  if (all(design$Valuador != "")) {
     # Add empty slots by repeating the design.
-    design <- bind_rows(design, mutate(design, Valuador = NA))
+    design <- bind_rows(design, mutate(design, Valuador = "", CodigoMuestra = ""))
+    # Randomly get new sample codes.
+    design$CodigoMuestra[design$CodigoMuestra == ""] <- paste0("M", setdiff(
+      sample(1000, 1000) - 1, as.numeric(gsub("M", "", design$CodigoMuestra))
+    )[seq_len(sum(design$CodigoMuestra == ""))])
   }
   if (!username %in% design$Valuador) {
-    design$Valuador[is.na(design$Valuador)][[1]] <- username
+    design$Valuador[design$Valuador == ""][seq_len(nrow(products))] <- username
   }
   # Save the assigned design in a file.
-  filter(design, !is.na(Valuador)) %>%
-    mutate_at(vars(-Valuador), function(x) products[x, 1, drop = TRUE]) %>%
+  filter(design, Valuador != "") %>%
     select(Valuador, everything()) %>%
     write_csv(glue("{answers_dir}/diseno.csv"))
   design
