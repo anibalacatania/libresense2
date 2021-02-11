@@ -228,7 +228,8 @@ username_modal <- function(session, fixed_panelists) {
     username_input <- textInput("username", "Tu nombre (es tu identificador)")
   } else {
     username_input <- selectInput(
-      "username", "Tu nombre (es tu identificador)", choices = fixed_panelists
+      "username", "Tu nombre (es tu identificador)",
+      choices = fixed_panelists
     )
   }
   showModal(
