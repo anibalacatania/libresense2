@@ -62,7 +62,8 @@ run_panel <- function(
     design <- read_csv(design_file, col_types = cols())
   }
   # Create design columns if don't exist.
-  if (!"Valuador" %in% colnames(design)) {
+  fixed_panelists <- unique(design$Valuador)
+  if (is.null(fixed_panelists)) {
     design <- mutate(design, Valuador = "")
   }
   if (!"NombreProducto" %in% colnames(design)) {
@@ -104,6 +105,8 @@ run_panel <- function(
       "});",
       sep = "\n"
     )),
+    # Show username.
+    disabled(textInput("panelist_name", "Panelista")),
     # Selector of the product to evaluate.
     disabled(selectInput("product", "", choices = NULL)),
     # UI for the different attributes inputs.
@@ -145,12 +148,13 @@ run_panel <- function(
     observeEvent(getQueryString()$user, username(getQueryString()$user))
     observeEvent(getQueryString()$product, product(getQueryString()$product))
     observeEvent(getQueryString(), finished("finished" %in% names(getQueryString())))
+    observeEvent(username(), updateTextInput(session, "panelist_name", value = username()))
     # Ask to get the username.
-    username_modal(session)
+    username_modal(session, fixed_panelists)
     observeEvent(input$submitName, {
       if (nchar(input$username) == 0) {
         showNotification("Ingrese su nombre.", type = "error")
-        username_modal(session)
+        username_modal(session, fixed_panelists)
         return()
       }
       if (input$username %in% panel()) {
@@ -219,10 +223,17 @@ run_panel <- function(
 
 
 # Shows the modal in which to enter the "username".
-username_modal <- function(session) {
+username_modal <- function(session, fixed_panelists) {
+  if (is.null(fixed_panelists)) {
+    username_input <- textInput("username", "Tu nombre (es tu identificador)")
+  } else {
+    username_input <- selectInput(
+      "username", "Tu nombre (es tu identificador)", choices = fixed_panelists
+    )
+  }
   showModal(
     modalDialog(
-      textInput("username", "Tu nombre (es tu identificador)"),
+      username_input,
       actionButton("submitName", "Enviar"),
       align = "center",
       title = "Bienvenida/o",
