@@ -10,6 +10,8 @@
 #'   as appear in `products_file`; "CodigoProducto" is a random code assigned to each different
 #'   product; "CodigoMuestra" is a random code assigned to each different product-panelist
 #'   combination.
+#' @param randomized_attributes A logical indicating if attributes should appear in random order
+#'   for each product evaluation. I.e., random experimental design for attributes.
 #' @param dest_url An optional character including the URL to use as destination host and port.
 #'   For example: 192.168.100.7:4000 .
 #' @param numeric_range A numeric vector indicating the range for numeric inputs.
@@ -32,7 +34,8 @@
 #'
 run_panel <- function(
                       products_file, attributes_file, design_file = NULL, answers_dir = "Answers",
-                      product_name = "NombreProducto", dest_url = NULL, numeric_range = c(0, 10)) {
+                      product_name = "NombreProducto", randomized_attributes = TRUE,
+                      dest_url = NULL, numeric_range = c(0, 10)) {
 
   ### Input variables check.
 
@@ -56,13 +59,12 @@ run_panel <- function(
 
   # Load configuration files.
   products <- read_csv(products_file, col_types = cols())
-  attributes <- read_csv(attributes_file, col_types = cols())
   design <- tibble(Muestra = seq_len(nrow(products)))
   if (!is.null(design_file)) {
     design <- read_csv(design_file, col_types = cols())
   }
   # Create design columns if don't exist.
-  fixed_panelists <- unique(design$Valuador)
+  fixed_panelists <- unique(suppressWarnings(design$Valuador))
   if (is.null(fixed_panelists)) {
     design <- mutate(design, Valuador = "")
   }
@@ -125,15 +127,21 @@ run_panel <- function(
     product <- reactiveVal("") # Current product.
     # Control if the panelist has finished.
     finished <- reactiveVal(FALSE)
+    attributes <- reactiveVal({
+      attrs <- read_csv(attributes_file, col_types = cols())
+      if (randomized_attributes) {
+        attrs <- attrs[sample(nrow(attrs)),]
+      }
+      attrs
+    })
 
     # Prepare products selector.
     updateSelectInput(session, "product", label = colnames(products)[[1]])
 
     # Prepare attributes inputs.
     output$attributes <- renderUI({
-      map(seq_len(nrow(attributes)), function(i) {
-        create_ui(attributes[i, ], numeric_range)
-      })
+      attributes <- attributes()
+      map(seq_len(nrow(attributes)), ~ create_ui(attributes[.x, ], numeric_range))
     })
 
     # Disable everything if evaluation has finished.
@@ -193,6 +201,7 @@ run_panel <- function(
       # Get the attributes inputs.
       curr_design <- filter(design(), Valuador == username())
       prod_name <- filter_at(curr_design, product_name, ~ .x == input$product)$NombreProducto
+      attributes <- attributes()
       reactiveValuesToList(input)[make.names(as.character(attributes$Nombre))] %>%
         setNames(as.character(attributes$Nombre)) %>%
         # If they are text, paste them with commas.
@@ -213,6 +222,10 @@ run_panel <- function(
         updateQueryString(glue("?finished"), mode = "replace")
       }
       js$scrolltop() # Scroll to top.
+      # Resample attributes if required to.
+      if (randomized_attributes) {
+        attributes(attributes[sample(nrow(attributes)),])
+      }
       showNotification("Valuación guardada", type = "message")
     })
   }
@@ -253,6 +266,10 @@ create_ui <- function(attribute, numeric_range) {
     Numeric = sliderInput(
       make.names(as.character(attribute$Nombre)),
       label = as.character(attribute$Nombre),
+      # label = fluidRow(
+      #   as.character(attribute$Nombre),
+      #   fluidRow(column(6, "Poco"), column(6, "Mucho"))
+      # ),
       min = numeric_range[[1]], max = numeric_range[[2]], value = mean(numeric_range), step = .5
     ),
     Check = checkboxInput(

@@ -10,6 +10,7 @@ run_panel(
   design_file = NULL,
   answers_dir = "Answers",
   product_name = "NombreProducto",
+  randomized_attributes = TRUE,
   dest_url = NULL,
   numeric_range = c(0, 10)
 )
@@ -29,6 +30,9 @@ indicating which product label the panelist will see. "NombreProducto" is the pr
 as appear in `products_file`; "CodigoProducto" is a random code assigned to each different
 product; "CodigoMuestra" is a random code assigned to each different product-panelist
 combination.}
+
+\item{randomized_attributes}{A logical indicating if attributes should appear in random order
+for each product evaluation. I.e., random experimental design for attributes.}
 
 \item{dest_url}{An optional character including the URL to use as destination host and port.
 For example: 192.168.100.7:4000 .}
