@@ -34,7 +34,7 @@
 #'
 run_panel <- function(
                       products_file, attributes_file, design_file = NULL, answers_dir = "Answers",
-                      product_name = "NombreProducto", randomized_attributes = TRUE,
+                      product_name = "NombreProducto", randomized_attributes = FALSE,
                       dest_url = NULL, numeric_range = c(0, 10)) {
 
   ### Input variables check.

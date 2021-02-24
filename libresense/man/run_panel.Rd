@@ -10,7 +10,7 @@ run_panel(
   design_file = NULL,
   answers_dir = "Answers",
   product_name = "NombreProducto",
-  randomized_attributes = TRUE,
+  randomized_attributes = FALSE,
   dest_url = NULL,
   numeric_range = c(0, 10)
 )
