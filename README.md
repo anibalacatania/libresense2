@@ -32,7 +32,7 @@ if (!require("remotes")) {
   install.packages("remotes")
 }
 remotes::install_github(
-  "jcrodriguez1989/LibreSense", subdir = "libresense", dependencies = TRUE
+  "anibalacatania/LibreSense", subdir = "libresense", dependencies = TRUE
 )
 ```
 
@@ -48,15 +48,15 @@ this should be performed in a `csv` file, as exemplified in
     #> 1 Intensidad de color Numeric
     #> 2              Aromas    Text
     #> 3             Sabores    Text
-    #> 4              Frutal Numeric
-    #> 5              Floral Numeric
-    #> 6            Herbáceo Numeric
+    #> 4              Frutal   Check
+    #> 5              Floral   Check
+    #> 6            Herbáceo   Check
 
 This `csv` file should contain two columns:
 
 -   Nombre: The names of the attribute to be evaluated.
 -   Valores: The types of the attribute to be evaluated, must be one of
-    `{"Numeric", "Text"}`
+    `{"Numeric", "Check", "Text"}`
 
 ### Setting the Products to Evaluate
 
@@ -91,6 +91,64 @@ libresense::run_panel(
   answers_dir = "Answers/"
 )
 ```
+
+##### Using an Experimental Design
+
+LibreSense allows an experimental design for the panel. This design file
+must contain a column named `Muestra` which will hold the order in which
+each product should be evaluated by each panelist, i.e., the first rows
+will be for the first panelist, and so on. For example, if we want to
+create a Williams Latin Square design for our `"productos.csv"` file we
+could run:
+
+``` r
+library("crossdes")
+library("dplyr")
+library("readr")
+
+wls_design <- read_csv(                            # Read the products file.
+  "productos.csv", col_types = cols()
+) %>%
+  nrow() %>%                                       # Get how many products to evaluate.
+  williams()                                       # Create the Williams Latin Square design.
+data.frame(Muestra = as.vector(t(wls_design))) %>% # Reformat it as a one-column data.frame.
+  write_csv("diseno.csv")                          # Save it as a csv file.
+read_csv("diseno.csv", col_types = cols())         # Print the design.
+#> # A tibble: 16 x 1
+#>    Muestra
+#>      <dbl>
+#>  1       1
+#>  2       2
+#>  3       4
+#>  4       3
+#>  5       2
+#>  6       3
+#>  7       1
+#>  8       4
+#>  9       3
+#> 10       4
+#> 11       2
+#> 12       1
+#> 13       4
+#> 14       1
+#> 15       3
+#> 16       2
+```
+
+And finally, use this design for the panel:
+
+``` r
+libresense::run_panel(
+  products_file = "productos.csv",
+  attributes_file = "atributos.csv",
+  answers_dir = "Answers/",
+  design_file = "diseno.csv"
+)
+```
+
+Once the panel evaluations have finished, in the `answers_dir` folder,
+there will be a file named `"diseno.csv"` which will contain the order
+in which each product was evaluated by each panelist.
 
 #### Running the Board
 

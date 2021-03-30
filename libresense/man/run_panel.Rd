@@ -7,7 +7,10 @@
 run_panel(
   products_file,
   attributes_file,
+  design_file = NULL,
   answers_dir = "Answers",
+  product_name = "NombreProducto",
+  randomized_attributes = FALSE,
   dest_url = NULL,
   numeric_range = c(0, 10)
 )
@@ -17,8 +20,19 @@ run_panel(
 
 \item{attributes_file}{A character path to the csv file containing the attributes to evaluate.}
 
+\item{design_file}{A character path to the csv file containing the experimental design.}
+
 \item{answers_dir}{A character path to the folder in which to save user responses (if it does not
 exist, it will create it).}
+
+\item{product_name}{One of {"NombreProducto", "CodigoProducto", "CodigoMuestra"},
+indicating which product label the panelist will see. "NombreProducto" is the products' names
+as appear in `products_file`; "CodigoProducto" is a random code assigned to each different
+product; "CodigoMuestra" is a random code assigned to each different product-panelist
+combination.}
+
+\item{randomized_attributes}{A logical indicating if attributes should appear in random order
+for each product evaluation. I.e., random experimental design for attributes.}
 
 \item{dest_url}{An optional character including the URL to use as destination host and port.
 For example: 192.168.100.7:4000 .}

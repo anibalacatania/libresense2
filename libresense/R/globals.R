@@ -2,6 +2,7 @@
 utils::globalVariables(c(
   "Atributo",
   "Freq",
+  "Muestra",
   "Nombre",
   "Producto",
   "Valor",
