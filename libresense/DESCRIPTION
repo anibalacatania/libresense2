@@ -16,7 +16,7 @@ Authors@R: c(
       email = "catania.anibal@inta.gob.ar"
     )
   )
-Maintainer: Juan Cruz Rodriguez <jcrodriguez@unc.edu.ar>
+Maintainer: Aníbal Alejandro Catania <catania.anibal@inta.gob.ar>
 Description: First attempt at building open-source software for sensory analysis.
 License: MIT + file LICENSE
 Encoding: UTF-8
