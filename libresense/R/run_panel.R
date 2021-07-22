@@ -29,7 +29,7 @@
 #' @importFrom shinythemes shinytheme
 #' @importFrom stats setNames
 #' @importFrom tidyselect everything
-#' @importFrom shiny tags
+#' @importFrom shiny br em h1 h4 h5 h6 hr img
 #'
 #' @export
 #'
