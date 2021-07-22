@@ -33,6 +33,8 @@
 #'
 #' @export
 #'
+
+library(shiny)
 run_panel <- function(
                       products_file, attributes_file, design_file = NULL, answers_dir = "Answers",
                       product_name = "NombreProducto", randomized_attributes = FALSE,
@@ -91,6 +93,8 @@ run_panel <- function(
 
   ### UI.
 
+
+
   ui <- fluidPage(
     # Set a dark theme.
     theme = shinytheme("cyborg"),
@@ -115,8 +119,8 @@ run_panel <- function(
     # UI for the different attributes inputs.
     uiOutput("attributes"),
     actionButton("submit", "Enviar"),
-    h5("https://github.com/anibalacatania/LibreSense"),
-    h5("catania.anibal@inta.gob.ar"),
+    h6("https://github.com/anibalacatania/LibreSense", style = "font-size:10px;"),
+    h6("catania.anibal@inta.gob.ar", style = "font-size:10px;"),
     align = "center"
   )
 
