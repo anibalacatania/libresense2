@@ -30,6 +30,7 @@
 #' @importFrom stats setNames
 #' @importFrom tidyselect everything
 #' @import shiny
+#' @import htmltools
 #'
 #' @export
 #'
