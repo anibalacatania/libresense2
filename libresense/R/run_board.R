@@ -56,7 +56,7 @@ run_board <- function(
         ),
         h6("LibreSense R package"),
         em(h6("https://github.com/ anibalacatania/LibreSense")),
-        h6("catania.anibal@intao.gob.ar"),
+        h6("catania.anibal@inta.gob.ar"),
         h5("INTA EEA Mendoza"),
         if (!is.null(panel_url)) plotOutput("qrcode"),
         width = 2
