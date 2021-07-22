@@ -29,8 +29,7 @@
 #' @importFrom shinythemes shinytheme
 #' @importFrom stats setNames
 #' @importFrom tidyselect everything
-#' @import shiny
-#' @import htmltools
+#' @importFrom htmltools builder h6
 #'
 #' @export
 #'
