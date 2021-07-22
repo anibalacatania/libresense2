@@ -24,7 +24,7 @@
 #' @importFrom qrcode qrcode_gen
 #' @importFrom readr cols read_csv
 #' @importFrom SensoMineR decat
-#' @importFrom shiny br em h1 h4 h5 hr img
+#' @importFrom shiny br em h1 h4 h5 h6 hr img
 #' @importFrom shiny checkboxInput column conditionalPanel fluidPage fluidRow mainPanel
 #' @importFrom shiny observeEvent plotOutput reactiveTimer reactiveVal renderPlot req selectInput
 #' @importFrom shiny shinyApp sidebarLayout sidebarPanel tabPanel tabsetPanel updateSelectInput
@@ -54,9 +54,9 @@ run_board <- function(
         img(
           src = "https://inta.gob.ar/sites/default/files/inta_solo_0.jpg", height = 100, width = 100
         ),
-        h4("LibreSense"),
-        em(h4("e-Tasting")),
-        h5("Centro de Estudios de Enologia"),
+        h6("LibreSense R package"),
+        em(h6("https://github.com/ anibalacatania/LibreSense")),
+        h6("catania.anibal@intao.gob.ar"),
         h5("INTA EEA Mendoza"),
         if (!is.null(panel_url)) plotOutput("qrcode"),
         width = 2

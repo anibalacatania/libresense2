@@ -20,6 +20,7 @@
 #' @importFrom glue glue
 #' @importFrom purrr map
 #' @importFrom readr cols read_csv write_csv
+#' @importFrom shiny br em h1 h4 h5 h6 hr img
 #' @importFrom shiny actionButton checkboxInput fluidPage getQueryString modalDialog reactiveVal
 #' @importFrom shiny reactiveValuesToList removeModal renderUI selectInput selectizeInput shinyApp
 #' @importFrom shiny showModal showNotification sliderInput textInput
@@ -29,12 +30,9 @@
 #' @importFrom shinythemes shinytheme
 #' @importFrom stats setNames
 #' @importFrom tidyselect everything
-#' @importFrom shiny br em h1 h4 h5 h6 hr img
 #'
 #' @export
 #'
-
-library(shiny)
 run_panel <- function(
                       products_file, attributes_file, design_file = NULL, answers_dir = "Answers",
                       product_name = "NombreProducto", randomized_attributes = FALSE,
@@ -119,8 +117,6 @@ run_panel <- function(
     # UI for the different attributes inputs.
     uiOutput("attributes"),
     actionButton("submit", "Enviar"),
-    h6("https://github.com/anibalacatania/LibreSense", style = "font-size:10px;"),
-    h6("catania.anibal@inta.gob.ar", style = "font-size:10px;"),
     align = "center"
   )
 
