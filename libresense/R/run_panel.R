@@ -117,8 +117,6 @@ run_panel <- function(
     # UI for the different attributes inputs.
     uiOutput("attributes"),
     actionButton("submit", "Enviar"),
-    h6("https://github.com/anibalacatania/LibreSense", style = "font-size:10px;"),
-    h6("catania.anibal@inta.gob.ar", style = "font-size:10px;"),
     align = "center"
   )
 
