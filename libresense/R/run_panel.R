@@ -294,7 +294,7 @@ reset_ui <- function(attribute, numeric_range, session) {
     type[[1]],
     Numeric = updateSliderInput(
       session, make.names(as.character(attribute$Nombre)),
-      value = mean(numeric_range)
+      value = 0
     ),
     Check = updateCheckboxInput(session, make.names(as.character(attribute$Nombre)), value = FALSE),
     Text = updateSelectizeInput(
