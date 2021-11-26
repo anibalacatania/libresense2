@@ -35,7 +35,7 @@
 #'
 run_board <- function(
                       answers_dir = "Answers", dest_url = NULL, panel_url = NULL,
-                      numeric_range = c(0, 10)) {
+                      numeric_range = c(0, 5)) {
   # Set default host/port, if not provided as `dest_url`.
   host <- getOption("shiny.host", "127.0.0.1")
   port <- getOption("shiny.port")
