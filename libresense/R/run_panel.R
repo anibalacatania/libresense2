@@ -273,7 +273,7 @@ create_ui <- function(attribute, numeric_range) {
       #   as.character(attribute$Nombre),
       #   fluidRow(column(6, "Poco"), column(6, "Mucho"))
       # ),
-      min = numeric_range[[1]], max = numeric_range[[2]], value = 0, step = .01, ticks = FALSE,step=1,
+      min = numeric_range[[1]], max = numeric_range[[2]], value = 0, step = 1, ticks = FALSE,
     ),
     Check = checkboxInput(
       make.names(as.character(attribute$Nombre)),
