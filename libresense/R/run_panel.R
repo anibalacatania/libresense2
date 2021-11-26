@@ -23,7 +23,7 @@
 #' @importFrom shiny br em h1 h4 h5 h6 hr img
 #' @importFrom shiny actionButton checkboxInput fluidPage getQueryString modalDialog reactiveVal
 #' @importFrom shiny reactiveValuesToList removeModal renderUI selectInput selectizeInput shinyApp
-#' @importFrom shiny showModal showNotification sliderInput textInput
+#' @importFrom shiny showModal showNotificationsliderInput textInput
 #' @importFrom shiny uiOutput updateCheckboxInput updateQueryString updateSelectInput
 #' @importFrom shiny updateSelectizeInput updateSliderInput updateTextInput
 #' @importFrom shinyjs disabled extendShinyjs js useShinyjs
@@ -273,7 +273,7 @@ create_ui <- function(attribute, numeric_range) {
       #   as.character(attribute$Nombre),
       #   fluidRow(column(6, "Poco"), column(6, "Mucho"))
       # ),
-      min = numeric_range[[1]], max = numeric_range[[2]], value = 0, step = .01, ticks = FALSE
+      min = numeric_range[[1]], max = numeric_range[[2]], value = 0, step = .01, ticks = FALSE,step=1,
     ),
     Check = checkboxInput(
       make.names(as.character(attribute$Nombre)),
