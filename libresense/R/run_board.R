@@ -164,13 +164,16 @@ run_board <- function(
       req(nrow(ans) > 0 && sum(col_types(ans) == "numeric") > 0)
       ans <- select(ans, Producto, Valuador, where(is.numeric)) %>%
         as.data.frame()
-      decat <- decat(ans, formul = "~Producto+Valuador", firstvar = 3, graph = FALSE)
-      pca <- PCA(decat$adjmean, scale.unit = FALSE)
-      wrap_plots(
-        plot.PCA(pca, choix = "ind", axes = 1:2),
-        plot.PCA(pca, choix = "var", axes = 1:2, shadowtext = TRUE, new.plot = TRUE),
-        nrow = 1,
-        widths = c(1, 1)
+      ans$Valuador<-NULL
+      CA(ans)
+     # decat <- decat(ans, formul = "~Producto+Valuador", firstvar = 3, graph = FALSE)
+
+      #pca <- PCA(decat$adjmean, scale.unit = FALSE)
+     # wrap_plots(
+        #plot.PCA(pca, choix = "ind", axes = 1:2),
+      #  plot.PCA(pca, choix = "var", axes = 1:2, shadowtext = TRUE, new.plot = TRUE),
+       # nrow = 1,
+       #widths = c(1, 1)
       )
     })
 
